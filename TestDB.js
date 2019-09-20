@@ -19,7 +19,7 @@ var url = "mongodb://localhost:27017/";
 // LIST ALL COLLECTIONS (TABLES) IN A DATABASE 
 //-----------------------------------------------
 function listAllCollections() {
-    MongoClient.connect(url, { useNewUrlParser: true }, function(err, db) {
+    MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
         if (err) throw err;
         var dbo = db.db(catDB);
         
@@ -35,26 +35,53 @@ function listAllCollections() {
 }
 
 //-----------------------------------------------
-// LIST ALL ATTRIBUTES FROM ATTRIBUTES COLLECTION
+// GET ALL ATTRIBUTES FROM ATTRIBUTES COLLECTION
 //-----------------------------------------------
-function getAllAttributes() {
+function getAllAttributes(cb) {
     console.log ('entered method getAllAttributes')
-    MongoClient.connect(url, { useNewUrlParser: true }, function(err, db) {
+    var attributes;
+    MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
         if (err) throw err;
         var dbo = db.db(catDB);
         dbo.collection('attributes').find().toArray(function(err, result) {
             if (err) throw err;
             if (result.length == 0) {
                 console.log ("Collection attributes is empty");
-                return
+                return cb(err);
             } 
             //take out unecessary info
             result = result.map(u => ({name: u.name, type: u.type}));
-            console.log (result);
+            attributes = result;
 
         db.close();
         });
     });
+    return cb(null, attributes);
+}
+
+//-----------------------------------------------
+// GET ALL VIDEOS FROM VIDEOS COLLECTION
+//-----------------------------------------------
+function getAllVideos(cb) {
+    console.log ('entered method getAllVideos')
+    var videos;
+    MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db(catDB);
+        dbo.collection('videos').find().toArray(function(err, result) {
+            if (err) throw err;
+            if (result.length == 0) {
+                console.log ("Collection videos is empty");
+                return cb(err);
+            } 
+            //take out unecessary info
+            result = result.map(u => ({name: u.contentId, attributes: u.attributes, categories: u.categories}));
+            videos = result
+
+        db.close();
+        });
+    }); 
+    return cb(null, videos)
 }
 
 function exitProgram() {
@@ -62,45 +89,14 @@ function exitProgram() {
     return process.exit(22);
 }
 
-listAllCollections();
-getAllAttributes();
-
-//
-
-// var arg = ''
-// async.waterfall([
-//     // A list of functions
-//     function(callback){
-//         // Function no. 1 in sequence
-//         getAllAttributes();
-//         callback(null, arg);
-//     },
-//     function(arg, callback){
-//         // Function no. 2 in sequence
-//         exitProgram();
-//         callback(null);
-//     }
-//   ],    
-//   function(err, results){
-//      // Optional final callback will get results for all prior functions
-//   });
-
-
-// MongoClient.connect(url, function(err, db) {
-//     MongoClient.connect(url, { useNewUrlParser: true }, function(err, db) {
-//     if (err) throw err;
-//     var dbo = db.db(catDB);
-//         dbo.createCollection('attributes', function(err, res) {
-//             if (err) throw err;
-//             console.log("requestTbl created!");
-//             db.close();
-//         });
-//         dbo.createCollection('videos', function(err, res) {
-//             if (err) throw err;
-//             console.log("responseTbl created!");
-//             db.close();
-//         });
-        
-//     });
-// });
-//-----------------------------------------------
+//----------------------------------------------------
+//EXECUTE FUNCTIONS ASYNCRONOUSLY 
+//----------------------------------------------------
+result = async.series([
+    getAllAttributes,
+    getAllVideos
+  ], 
+function(err) {
+  console.log('all functions complete')
+})
+//-----------------------------------------------------
