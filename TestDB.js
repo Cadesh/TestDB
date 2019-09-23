@@ -53,7 +53,7 @@ function getAllAttributes(cb) {
             } 
             //take out unecessary info
             result = result.map(u => ({name: u.name, type: u.type}));
-            saveToFile (result, "attributes.json")
+            saveToFile (result, "out_attributes.json")
             attributes = result;
 
         db.close();
@@ -78,8 +78,8 @@ function getAllVideos(cb) {
                 return cb(err);
             } 
             //take out unecessary info
-            result = result.map(u => ({name: u.contentId, attributes: u.attributes, categories: u.categories}));
-            saveToFile (result, "videos.json")
+            result = result.map(u => ({name: u.contentId, categories: u.categories}));
+            saveToFile (result, "out_videos.json")
             videos = result
 
         db.close();
@@ -94,16 +94,10 @@ function checkCategories(cb) {
 }
 
 //-----------------------------------------------
-// GET ALL VIDEOS FROM VIDEOS COLLECTION
+// SAVE DATA TO FILE
 //-----------------------------------------------
 function saveToFile (jsonData, fileName) {
   
-    console.log("saving file");
-    
-    // parse json
-    //var jsonObj = JSON.parse(jsonData);
-    //console.log(jsonObj);
-    
     // stringify JSON Object
     var jsonContent = JSON.stringify(jsonData);
     //console.log(jsonContent);
@@ -113,8 +107,7 @@ function saveToFile (jsonData, fileName) {
             console.log("An error occured while writing JSON Object to File.");
             return console.log(err);
         }
-    
-        console.log("JSON file has been saved.");
+        console.log("file has been saved.");
     });
 }
 //-----------------------------------------------

@@ -4,6 +4,8 @@ logs
 
 *.txt
 
+out_*.json
+
 # Runtime data
 pids
 *.pid
