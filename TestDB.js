@@ -1,7 +1,9 @@
 // A SERIES OF TESTS TO CHECK THE INTEGRITY OF THE DATABASE
 
 var async = require('async');
+const fs = require('fs');
 var MongoClient = require('mongodb').MongoClient;
+
 
 //----------------------------------------------------------
 // SOME GLOBAL PARAMETERS
@@ -51,6 +53,7 @@ function getAllAttributes(cb) {
             } 
             //take out unecessary info
             result = result.map(u => ({name: u.name, type: u.type}));
+            saveToFile (result, "attributes.json")
             attributes = result;
 
         db.close();
@@ -76,6 +79,7 @@ function getAllVideos(cb) {
             } 
             //take out unecessary info
             result = result.map(u => ({name: u.contentId, attributes: u.attributes, categories: u.categories}));
+            saveToFile (result, "videos.json")
             videos = result
 
         db.close();
@@ -83,6 +87,37 @@ function getAllVideos(cb) {
     }); 
     return cb(null, videos)
 }
+//-----------------------------------------------
+
+function checkCategories(cb) {
+    return cb(null, videos)
+}
+
+//-----------------------------------------------
+// GET ALL VIDEOS FROM VIDEOS COLLECTION
+//-----------------------------------------------
+function saveToFile (jsonData, fileName) {
+  
+    console.log("saving file");
+    
+    // parse json
+    //var jsonObj = JSON.parse(jsonData);
+    //console.log(jsonObj);
+    
+    // stringify JSON Object
+    var jsonContent = JSON.stringify(jsonData);
+    //console.log(jsonContent);
+    
+    fs.writeFile(fileName, jsonContent, 'utf8', function (err) {
+        if (err) {
+            console.log("An error occured while writing JSON Object to File.");
+            return console.log(err);
+        }
+    
+        console.log("JSON file has been saved.");
+    });
+}
+//-----------------------------------------------
 
 function exitProgram() {
     console.log ('exiting');
@@ -94,7 +129,7 @@ function exitProgram() {
 //----------------------------------------------------
 result = async.series([
     getAllAttributes,
-    getAllVideos
+    getAllVideos,
   ], 
 function(err) {
   console.log('all functions complete')
