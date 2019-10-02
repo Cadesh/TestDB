@@ -89,9 +89,45 @@ function getAllVideos(cb) {
 }
 //-----------------------------------------------
 
-function checkCategories(cb) {
-    return cb(null, videos)
+//-----------------------------------------------
+function getVideosByCategory(category) {
+    console.log ('entered method getAllVideos by category')
+    var videos;
+    MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db(catDB);
+        dbo.collection('videos').find().toArray(function(err, result) {
+            if (err) throw err;
+            if (result.length == 0) {
+                console.log ("Collection videos is empty");
+                return cb(err);
+            } 
+            //take out unecessary info
+            result = result.map(u => ({id: u._id, categories: u.categories}));
+            console.log("get videos: " + result.length);
+ 
+            // SELECT THE VIDEOS BY THE CATEGORY
+            //----------------------------------------
+            var sample = new Array(); //empty array
+            for (var k in result) {
+                for( var key in result[k].categories){
+                    if(result[k].categories[key] === category){
+                        var locObj = result[k];
+                        locObj.categories = [];
+                        sample.push(result[k]);
+
+                    }
+                } 
+            }
+            console.log('Videos found: ' + sample.length);
+            saveToFile (sample, category.concat(".json"));
+            //-----------------------------------------
+
+        db.close();
+        });
+    }); 
 }
+//-----------------------------------------------
 
 //-----------------------------------------------
 // SAVE DATA TO FILE
@@ -120,11 +156,12 @@ function exitProgram() {
 //----------------------------------------------------
 //EXECUTE FUNCTIONS ASYNCRONOUSLY 
 //----------------------------------------------------
-result = async.series([
-    getAllAttributes,
-    getAllVideos,
-  ], 
-function(err) {
-  console.log('all functions complete')
-})
+// result = async.series([
+//     getAllAttributes,
+//     getAllVideos,
+//   ], 
+// function(err) {
+//   console.log('all functions complete')
+// })
+getVideosByCategory('wildlife');
 //-----------------------------------------------------
