@@ -3,6 +3,7 @@ logs
 *.log
 
 *.txt
+*.csv
 
 out_*.json
 

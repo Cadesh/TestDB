@@ -90,6 +90,31 @@ function getAllVideos(cb) {
 //-----------------------------------------------
 
 //-----------------------------------------------
+//SAVE JSON AS CSV
+//-----------------------------------------------
+function saveToCSV(json, fileName) {
+    json = Object.values(json);
+    var csv = "";
+    var keys = (json[0] && Object.keys(json[0])) || [];
+    csv += keys.join(',') + '\n';
+    for (var line of json) {
+      csv += keys.map(key => line[key]).join(',') + '\n';
+    }
+
+    fs.writeFile(fileName, csv, 'utf8', function (err) {
+        if (err) {
+            console.log("An error occured while writing JSON Object to File.");
+            return console.log(err);
+        }
+        console.log("csv file has been saved.");
+    });
+
+  }
+//-----------------------------------------------
+
+//-----------------------------------------------
+// SELECT VIDEOS BY CATEGORY
+//-----------------------------------------------
 function getVideosByCategory(category) {
     console.log ('entered method getAllVideos by category')
     var videos;
@@ -103,7 +128,7 @@ function getVideosByCategory(category) {
                 return cb(err);
             } 
             //take out unecessary info
-            result = result.map(u => ({id: u._id, categories: u.categories}));
+            result = result.map(u => ({id: u._id, date: u.publishDate, categories: u.categories}));
             console.log("get videos: " + result.length);
  
             // SELECT THE VIDEOS BY THE CATEGORY
@@ -120,6 +145,7 @@ function getVideosByCategory(category) {
                 } 
             }
             console.log('Videos found: ' + sample.length);
+            saveToCSV(sample, category.concat(".csv"));
             saveToFile (sample, category.concat(".json"));
             //-----------------------------------------
 
